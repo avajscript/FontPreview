@@ -10,14 +10,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class FontPreview extends JFrame {
+    // list of all system fonts
     private static final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
     // Heading one font
-    private static final  Font headingFont = new Font("Rockwell", Font.BOLD, 24);
+    private static final Font HEADING_FONT = new Font("Rockwell", Font.BOLD, 24);
     // Heading two font
-    private static final Font headingFont2 = new Font("Rockwell", Font.PLAIN, 20);
+    private static final Font HEADING_FONT_2 = new Font("Rockwell", Font.PLAIN, 20);
     // Default border for JPanels
-    private EmptyBorder baseBorder = new EmptyBorder(8, 16, 8, 16);
-    private EmptyBorder smallBorder = new EmptyBorder(4, 8, 4, 8);
+    private static final EmptyBorder BASE_BORDER = new EmptyBorder(8, 16, 8, 16);
+    private static final EmptyBorder BASE_BORDER_SMALL = new EmptyBorder(4, 8, 4, 8);
     // List object for fonts
     private static final JList<String> fontList = new JList<String>(fonts);
     private int fontSize = 32;
@@ -31,22 +32,22 @@ public class FontPreview extends JFrame {
         setTitle("Font Previewer");
         // Header panel
         JPanel headerPanel = new JPanel();
-        headerPanel.setBorder(baseBorder);
+        headerPanel.setBorder(BASE_BORDER);
         JLabel headingLabel = new JLabel("Font Previewer");
-        headingLabel.setFont(headingFont);
+        headingLabel.setFont(HEADING_FONT);
         headerPanel.add(headingLabel);
 
         // Center panel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new GridLayout(1, 2));
-        centerPanel.setBorder(baseBorder);
+        centerPanel.setBorder(BASE_BORDER);
 
         // left center panel
         JPanel leftCenterPanel = new JPanel();
         leftCenterPanel.setLayout(new BoxLayout(leftCenterPanel, BoxLayout.Y_AXIS));
         // left center panel label
         JLabel centerLabel = new JLabel("Select a font");
-        centerLabel.setFont(headingFont2);
+        centerLabel.setFont(HEADING_FONT_2);
         // font list scroll pane
         fontList.addMouseListener(listSelectListener());
         JScrollPane scrollableFontList = new JScrollPane(fontList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -58,7 +59,7 @@ public class FontPreview extends JFrame {
 
         // right center panel
         JPanel rightCenterPanel = new JPanel();
-        rightCenterPanel.setBorder(baseBorder);
+        rightCenterPanel.setBorder(BASE_BORDER);
         rightCenterPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1;
@@ -68,12 +69,12 @@ public class FontPreview extends JFrame {
         previewLabel = new JLabel(fontText);
         previewLabel.setFont(previewFont);
         previewLabel.setOpaque(true);
-        previewLabel.setBorder(baseBorder);
+        previewLabel.setBorder(BASE_BORDER);
         previewLabel.setBackground(DesignPalette.WHITE_BG);
 
         // font size scroll section
         JPanel scrollPanel = new JPanel();
-        scrollPanel.setBorder(smallBorder);
+        scrollPanel.setBorder(BASE_BORDER_SMALL);
         scrollPanel.setLayout(new BoxLayout(scrollPanel, BoxLayout.X_AXIS));
         // slider
         fontSlider = new JSlider(8, 60, fontSize);
@@ -167,7 +168,3 @@ public class FontPreview extends JFrame {
     }
 }
 
-class DesignPalette {
-    public static final Color WHITE_BG = new Color(251, 251, 251);
-    public static final Color BLACK_BG = new Color(52, 52, 52);
-}
