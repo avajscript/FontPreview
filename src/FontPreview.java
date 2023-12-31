@@ -6,6 +6,8 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class FontPreview extends JFrame {
     private static final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
@@ -23,10 +25,10 @@ public class FontPreview extends JFrame {
     JLabel previewLabel;
     JSlider fontSlider;
     JLabel fontSizeLabel;
-    Font previewFont = new Font(fontText, Font.PLAIN, fontSize);
+    private int fontWeight = Font.PLAIN;
+    Font previewFont = new Font(fontText, fontWeight, fontSize);
     public FontPreview() {
         setTitle("Font Previewer");
-
         // Header panel
         JPanel headerPanel = new JPanel();
         headerPanel.setBorder(baseBorder);
@@ -46,6 +48,7 @@ public class FontPreview extends JFrame {
         JLabel centerLabel = new JLabel("Select a font");
         centerLabel.setFont(headingFont2);
         // font list scroll pane
+        fontList.addMouseListener(listSelectListener());
         JScrollPane scrollableFontList = new JScrollPane(fontList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollableFontList.setMinimumSize(new Dimension(200, 400));
         scrollableFontList.setMaximumSize(new Dimension(240, 400));
@@ -113,6 +116,38 @@ public class FontPreview extends JFrame {
 //        }
     }
 
+    public MouseListener listSelectListener() {
+        MouseListener mouseListener = new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                fontText = fontList.getSelectedValue();
+                previewFont = new Font(fontText, fontWeight, fontSize);
+                previewLabel.setFont(previewFont);
+                previewLabel.setText(fontText);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        };
+        return mouseListener;
+    }
     public ChangeListener fontSliderChangeListener() {
         ChangeListener fontSliderChange = new ChangeListener() {
             @Override
