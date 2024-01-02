@@ -2,7 +2,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +11,8 @@ import java.awt.event.MouseListener;
 public class FontPreview extends JFrame {
     // list of all system fonts
     private static final String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    // list of favorited fonts
+    String[] savedFonts = FontFileWriter.readFileAsArray(FOLDER_PATH + FILE_PATH);
     // Heading one font
     private static final Font HEADING_FONT = new Font("Rockwell", Font.BOLD, 24);
     // Heading two font
@@ -26,10 +27,20 @@ public class FontPreview extends JFrame {
     JLabel previewLabel;
     JSlider fontSlider;
     JLabel fontSizeLabel;
+    JButton saveButton;
     private int fontWeight = Font.PLAIN;
     Font previewFont = new Font(fontText, fontWeight, fontSize);
+    // used to see if favorited fonts needs to be updated
+    private boolean favCacheRequired = false;
+    private boolean fontIsSaved = false;
+    // file paths
+    private static final String FOLDER_PATH = "data/";
+    private static final String FILE_PATH = "favFonts.txt";
     public FontPreview() {
         setTitle("Font Previewer");
+        // Menu
+        FontMenu fontMenu = new FontMenu();
+        setJMenuBar(fontMenu);
         // Header panel
         JPanel headerPanel = new JPanel();
         headerPanel.setBorder(BASE_BORDER);
@@ -65,6 +76,14 @@ public class FontPreview extends JFrame {
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.insets = new Insets(4, 0, 4, 0);
+
+        // save button
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        saveButton = getSaveButton();
+        buttonPanel.add(saveButton);
+
         // right center label
         previewLabel = new JLabel(fontText);
         previewLabel.setFont(previewFont);
@@ -77,13 +96,15 @@ public class FontPreview extends JFrame {
         scrollPanel.setBorder(BASE_BORDER_SMALL);
         scrollPanel.setLayout(new BoxLayout(scrollPanel, BoxLayout.X_AXIS));
         // slider
-        fontSlider = new JSlider(8, 60, fontSize);
-        fontSlider.addChangeListener(fontSliderChangeListener());
         fontSizeLabel = new JLabel(fontSize + "px");
+        fontSlider = new JSlider(8, 60, fontSize);
+        fontSlider.setMaximumSize(new Dimension(120, 30));
+        fontSlider.addChangeListener(fontSliderChangeListener());
         // add to scroll label
         scrollPanel.add(fontSizeLabel);
         scrollPanel.add(fontSlider);
         // add to right center panel
+        rightCenterPanel.add(buttonPanel, gbc);
         rightCenterPanel.add(previewLabel, gbc);
         rightCenterPanel.add(scrollPanel, gbc);
 
@@ -109,22 +130,118 @@ public class FontPreview extends JFrame {
         add(bottomPanel, BorderLayout.SOUTH);
         setSize(600, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        //setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
         setVisible(true);
-//        for (String font : fonts) {
-//            System.out.println(font);
-//        }
     }
 
+    public JButton getSaveButton() {
+        saveButton = new JButton();
+        // iterate over savedFonts to see if it contains the current one
+        boolean fontSaved = false;
+        for (int i = 0; i < savedFonts.length; i++) {
+            // font matches
+            if (savedFonts[i].equals(fontText)) {
+                fontSaved = true;
+                break;
+            }
+        }
+        if (fontSaved) {
+           saveButton.setText("Remove Favorite");
+           saveButton.addActionListener(removeSavedFont());
+        } else {
+            saveButton.setText("Save Font");
+            saveButton.addActionListener(saveFont());
+        }
+        return saveButton;
+    }
+
+    public ActionListener removeSavedFont() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FontFileWriter.removeFontFromFile(FOLDER_PATH + FILE_PATH, fontText);
+                saveButton.removeActionListener(removeSavedFont());
+                saveButton.addActionListener(saveFont());
+                saveButton.setText("Save Font");
+                favCacheRequired = true;
+            }
+        };
+    }
+
+    public ActionListener toggleFont() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //font is currently saved
+                if (fontIsSaved) {
+                    FontFileWriter.removeFontFromFile()
+                    saveButton.setText("Remove Font");
+                    // font is not saved
+                } else {
+
+                }
+            }
+        };
+    }
+    public ActionListener saveFontToggle() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FontFileWriter.appendToFile(FOLDER_PATH + FILE_PATH, fontText);
+                saveButton.removeActionListener(saveFont());
+                saveButton.addActionListener(removeSavedFont());
+                saveButton.setText("Remove Favorite");
+                favCacheRequired = true;
+            }
+        };
+    }
+
+    /**
+     * checks if the favorited fonts needs to be updated
+     * and updates it, then resets the cache required boolean state
+     */
+    public void checkAndUpdateFontCache() {
+        if (favCacheRequired) {
+            // update the favorite fonts and reset the cache state
+            savedFonts = FontFileWriter.readFileAsArray(FOLDER_PATH + FILE_PATH);
+            favCacheRequired = false;
+        }
+        boolean favorited = false;
+        // iterate over all favorited fonts to see if it matches current one
+        for (int i = 0; i < savedFonts.length; i++) {
+            // if match
+            if (savedFonts[i].equals(fontText)) {
+                saveButton.setText("Remove Font");
+                saveButton.removeActionListener(removeSavedFont());
+                saveButton.addActionListener(removeSavedFont());
+                favorited = true;
+            }
+        }
+        System.out.println(favorited);
+        // add event listener to save font if not font isn't favorited
+        if (!favorited) {
+            saveButton.setText("Save Font");
+            System.out.println("Bugg");
+            saveButton.removeActionListener(saveFont());
+            saveButton.addActionListener(saveFont());
+        }
+
+    }
+
+    /**
+     * Update the selected font when one of the list items is selected.
+     * Also, updates the saveButton favorite state
+     * @return mouseListener for list that runs on mouse click
+     */
     public MouseListener listSelectListener() {
         MouseListener mouseListener = new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                // change the font to the selected font in the list
                 fontText = fontList.getSelectedValue();
                 previewFont = new Font(fontText, fontWeight, fontSize);
                 previewLabel.setFont(previewFont);
                 previewLabel.setText(fontText);
+                checkAndUpdateFontCache();
             }
 
             @Override
@@ -153,8 +270,8 @@ public class FontPreview extends JFrame {
         ChangeListener fontSliderChange = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
+                // update the font size text and the actual font size
                 fontSize = fontSlider.getValue();
-                System.out.println(fontSize);
                 fontSizeLabel.setText(fontSize + "px");
                 previewLabel.setFont(previewFont.deriveFont((float) fontSize));
             }
@@ -163,7 +280,7 @@ public class FontPreview extends JFrame {
     }
 
     public static void main (String[] args) {
-        new FontPreview();
+        SwingUtilities.invokeLater(()-> new FontPreview());
 
     }
 }
