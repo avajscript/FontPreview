@@ -1,9 +1,61 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FontFileWriter {
     private FontFileWriter() {
+
+    }
+
+    /**
+     * Created a folder with the given path and files for every element in given files array.
+     * It will not create the directory/files if the directory already exists
+     * @param path the directory path to be created
+     * @param files string array of file names to be created
+     * @return true if no errors and false if errors
+     */
+    public static boolean createFolderWithFiles(String path, String[] files) {
+        boolean success = true, fileState;
+        Path locPath;
+        File createdDirectory, newFile;
+
+        try {
+            // check to see if user given directory exists
+            // if not then create it and throw error if it still wasn't created
+            createdDirectory = new File(path);
+            if(!(createdDirectory.exists() && createdDirectory.isDirectory())) {
+                locPath = Paths.get(path);
+                Files.createDirectory(locPath);
+                createdDirectory = new File(path);
+                if (!createdDirectory.exists()) {
+                    throw new IOException("Error: Directory '" + "path' " + "not created");
+                }
+            } else {
+                // returns if the directory exists because we don't want to create new files at this point
+                return success;
+            }
+
+
+            // iterates over each string user given filename and created a
+            // file in the user given directory previously created
+            for (String file : files) {
+                newFile = new File(path + file);
+                if (!(newFile.exists() && newFile.isFile())) {
+                    fileState = newFile.createNewFile();
+                    if (!fileState) {
+                        throw new IOException("Error: File '" + file + "' not created");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            success = true;
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return success;
 
     }
 
@@ -36,10 +88,9 @@ public class FontFileWriter {
         return success;
     }
 
-    public static String[] readFileAsArray(String path) {
+    public static ArrayList<String> readFileAsArray(String path) {
         // list that holds strings of a file
-        List<String> listofStrings = new ArrayList<String>();
-        String[] fileArray;
+        ArrayList<String> listofStrings = new ArrayList<String>();
 
         BufferedReader bufferedReader;
         try {
@@ -57,14 +108,12 @@ public class FontFileWriter {
 
             // close the buffered reader
             bufferedReader.close();
-            fileArray = listofStrings.toArray(new String[0]);
             // returns file array if there were no errors
-            return fileArray;
         } catch(Exception e) {
             e.printStackTrace();
         }
         // returns empty string array if there was an error
-        return new String[0];
+        return listofStrings;
     }
 
     public static boolean removeFontFromFile(String path, String text) {

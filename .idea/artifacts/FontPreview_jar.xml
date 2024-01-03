@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="FontPreview:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/FontPreview_jar</output-path>
+    <root id="archive" name="FontPreview.jar">
+      <element id="module-output" name="FontPreview" />
+    </root>
+  </artifact>
+</component>
